@@ -1,0 +1,35 @@
+<h1>Listing messages</h1>
+
+<table>
+  <thead>
+    <tr>
+      <th>Userid</th>
+      <th>Phonenum</th>
+      <th>Time</th>
+      <th>Content</th>
+      <th>Processcode</th>
+      <th></th>
+      <th></th>
+      <th></th>
+    </tr>
+  </thead>
+
+  <tbody>
+    <% @messages.each do |message| %>
+      <tr>
+        <td><%= message.userId %></td>
+        <td><%= message.phoneNum %></td>
+        <td><%= message.time %></td>
+        <td><%= message.content %></td>
+        <td><%= message.processCode %></td>
+        <td><%= link_to 'Show', message %></td>
+        <td><%= link_to 'Edit', edit_message_path(message) %></td>
+        <td><%= link_to 'Destroy', message, method: :delete, data: { confirm: 'Are you sure?' } %></td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>
+
+<br>
+
+<%= link_to 'New Message', new_message_path %>

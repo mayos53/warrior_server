@@ -1,0 +1,29 @@
+<%= form_for(@spam) do |f| %>
+  <% if @spam.errors.any? %>
+    <div id="error_explanation">
+      <h2><%= pluralize(@spam.errors.count, "error") %> prohibited this spam from being saved:</h2>
+
+      <ul>
+      <% @spam.errors.full_messages.each do |msg| %>
+        <li><%= msg %></li>
+      <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div class="field">
+    <%= f.label :patternID %><br>
+    <%= f.number_field :patternID %>
+  </div>
+  <div class="field">
+    <%= f.label :senderID %><br>
+    <%= f.number_field :senderID %>
+  </div>
+  <div class="field">
+    <%= f.label :messageID %><br>
+    <%= f.number_field :messageID %>
+  </div>
+  <div class="actions">
+    <%= f.submit %>
+  </div>
+<% end %>

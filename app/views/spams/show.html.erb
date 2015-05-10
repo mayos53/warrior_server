@@ -1,0 +1,19 @@
+<p id="notice"><%= notice %></p>
+
+<p>
+  <strong>Patternid:</strong>
+  <%= @spam.patternID %>
+</p>
+
+<p>
+  <strong>Senderid:</strong>
+  <%= @spam.senderID %>
+</p>
+
+<p>
+  <strong>Messageid:</strong>
+  <%= @spam.messageID %>
+</p>
+
+<%= link_to 'Edit', edit_spam_path(@spam) %> |
+<%= link_to 'Back', spams_path %>

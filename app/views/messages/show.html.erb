@@ -1,0 +1,29 @@
+<p id="notice"><%= notice %></p>
+
+<p>
+  <strong>Userid:</strong>
+  <%= @message.userId %>
+</p>
+
+<p>
+  <strong>Phonenum:</strong>
+  <%= @message.phoneNum %>
+</p>
+
+<p>
+  <strong>Time:</strong>
+  <%= @message.time %>
+</p>
+
+<p>
+  <strong>Content:</strong>
+  <%= @message.content %>
+</p>
+
+<p>
+  <strong>Processcode:</strong>
+  <%= @message.processCode %>
+</p>
+
+<%= link_to 'Edit', edit_message_path(@message) %> |
+<%= link_to 'Back', messages_path %>

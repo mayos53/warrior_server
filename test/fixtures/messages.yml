@@ -1,0 +1,15 @@
+# Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  userId: 1
+  phoneNum: MyString
+  time: 1
+  content: MyString
+  processCode: 1
+
+two:
+  userId: 1
+  phoneNum: MyString
+  time: 1
+  content: MyString
+  processCode: 1

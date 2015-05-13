@@ -10,7 +10,7 @@ class UsersController < ApplicationController
     end
 
     render :json => {
-                    :statusCode => STATUS_OK,
+                    :statusCode => RESPONSE_STATUS_OK,
                     :userId => user.ID,
                     :phoneNum => user.phoneNum,
                     :UDID => user.UDID
@@ -23,19 +23,22 @@ class UsersController < ApplicationController
     user.save
     
     render :json => {
-                      :statusCode => STATUS_OK
+                      :statusCode => RESPONSE_STATUS_OK
                     }
   end  
 
 
 
 
-def user_params
-  params.require(:user).permit(:UDID, :phoneNum)
-end
 
-def registerForNotifications_params
-  params.require(:user).permit(:ID,:regID)
-end
 
-end
+
+  def user_params
+    params.require(:user).permit(:UDID, :phoneNum)
+  end
+
+  def registerForNotifications_params
+    params.require(:user).permit(:ID,:regID)
+  end
+
+  end

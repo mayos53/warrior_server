@@ -1,0 +1,11 @@
+# Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  patternID: 1
+  senderID: 1
+  messageID: 1
+
+two:
+  patternID: 1
+  senderID: 1
+  messageID: 1

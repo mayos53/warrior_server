@@ -8,7 +8,7 @@ class MessagesController < ApplicationController
   NOTIFICATION_TYPE_SYNCHRONIZE = 1
 
 
-
+#meir abergel 0525995578 elgrabli
 
   respond_to :html, :xml, :json	
 
@@ -25,7 +25,7 @@ class MessagesController < ApplicationController
   end
 
   def reportSpams
-    messages = reportSpam_params[messages]
+    messages = reportSpam_params[:messages]
     @patterns = Pattern.all
     result = []
 
@@ -60,10 +60,14 @@ class MessagesController < ApplicationController
   end
 
   def setSpams
+    logger.info "** request set Spams *** #{setSpams_params.inspect}**"
+
+
     spams = setSpams_params[:spams]
     spams.each do |spam|
-      message = Message.find(spam.id)
-      addPattern(message.content,spam.sure)
+      message = Message.find(spam[:id])
+      #addPattern(spam.pattern, spam.sure)
+      addPattern(spam[:pattern], true)
       addSenderToBlackList(message.phoneNum)
       message.processCode = MSG_PROCESS_CODE_SPAM
       message.save
@@ -74,11 +78,22 @@ class MessagesController < ApplicationController
     else
       responseStatus = RESPONSE_STATUS_ERROR
     end
+    render :js => "window.location = '/messages'"
+
+ end  
+
+ def addKeyword
+    word = addKeyword_params[:keyword]
+    keyword = Keyword.new(:word => word)
+    keyword.save
+    
     respond_to do |format|
         format.html
-        format.json {  render :json => {:status => responseStatus } } 
+        format.json {  render :json => {:status => RESPONSE_STATUS_OK } } 
     end
- end  
+
+  end
+  
 
   ################ Private methods ##############################
 
@@ -127,11 +142,15 @@ class MessagesController < ApplicationController
 
 
   def reportSpam_params
-    params.permit(:messages,:userId)
+    params.permit(:id,:pattern)
   end
 
   def setSpams_params
-    params.permit(:messagIds)
+    params.permit(spams: [:id,:pattern])
+  end
+
+  def addKeyword_params
+    params.permit(:keyword)
   end
  
 

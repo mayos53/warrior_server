@@ -23,16 +23,18 @@ ActiveRecord::Schema.define(version: 0) do
     t.integer "time",        limit: 8
     t.string  "content",     limit: 300
     t.integer "processCode"
+    t.integer "_ID",                     null: false
   end
 
   add_index "messages", ["userId"], name: "userID_idx", using: :btree
 
   create_table "Patterns", primary_key: "ID", force: true do |t|
-    t.string "content", limit: 300
+    t.string  "content", limit: 300
+    t.integer "sure"
   end
 
   create_table "Senders", primary_key: "ID", force: true do |t|
-    t.string "PhoneNum", limit: 20
+    t.string "phoneNum", limit: 20
   end
 
   create_table "Spams", primary_key: "ID", force: true do |t|

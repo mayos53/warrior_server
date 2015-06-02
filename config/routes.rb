@@ -1,9 +1,14 @@
 Warrior::Application.routes.draw do
   
 
+  resources :keywords
+
   resources :messages do
       collection do
-        get 'syncBlackList'
+        get  'syncBlackList'
+        post 'reportSpams'
+        post 'setSpams'
+        get  'addKeyword'
       end
   end
 

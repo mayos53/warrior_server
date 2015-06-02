@@ -1,35 +1,86 @@
-<h1>Listing messages</h1>
+<h1>Spams to add</h1>
 
 <table>
   <thead>
     <tr>
-      <th>Userid</th>
-      <th>Phonenum</th>
+      
       <th>Time</th>
-      <th>Content</th>
-      <th>Processcode</th>
-      <th></th>
-      <th></th>
-      <th></th>
+      <th>Sender Num</th>
+      <th>Text</th>
+      <th>Pattern</th>
+      <th>Spam</th>
+      
     </tr>
   </thead>
-
+  
   <tbody>
-    <% @messages.each do |message| %>
-      <tr>
-        <td><%= message.userId %></td>
-        <td><%= message.phoneNum %></td>
-        <td><%= message.time %></td>
-        <td><%= message.content %></td>
-        <td><%= message.processCode %></td>
-        <td><%= link_to 'Show', message %></td>
-        <td><%= link_to 'Edit', edit_message_path(message) %></td>
-        <td><%= link_to 'Destroy', message, method: :delete, data: { confirm: 'Are you sure?' } %></td>
-      </tr>
-    <% end %>
-  </tbody>
+    <%
+    @messages = Message.includes([:user]).where(:processCode => 3)%>
+    <% @messages.each_with_index do |message, index| %>
+        <%= fields_for "messages[#{index}]", message do |message_fields| %>
+          
+          <tr class="data" id="<%=message.ID%>">
+            <td> <%= message.time %> </td>
+            <td> <%= message.phoneNum %> </td>
+            <td> <%= message.content %> </td>
+            <td> <%= text_area_tag 'pattern' , message.content%> </td>
+            <td> <%= check_box_tag 'spam'%> </td>
+          </tr>
+        
+        <% end %>
+      <% end %>
+
+</tbody>
 </table>
+      
+
+<button id="setSpams" type="button">Set spams</button>
+
+<script>
+  $('#setSpams').click(function(){
+      spams = {}
+      spams.spams=[]
+      $('tr.data').each(function(){
+          id = $(this).attr('id')
+          pattern = $(this).find("#pattern").val()
+          spam =  $(this).find("#spam").prop('checked')
+          
+          if(spam){
+              spams.spams.push({id:id, pattern:pattern}) 
+          }
+         
+
+      })
+
+      $.ajax({ 
+         url: "/messages/setSpams.js",
+         type:"POST",
+         dataType: 'script',
+         contentType: 'application/json',
+         data: JSON.stringify(spams)
+      
+
+      })
+
+
+
+     
+
+
+  })
+
+</script>
+           
+
+
+
+    
+    
+
+   
+  
 
 <br>
 
-<%= link_to 'New Message', new_message_path %>
+
+

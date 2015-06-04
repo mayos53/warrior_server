@@ -2,24 +2,24 @@ class UsersController < ApplicationController
 
   respond_to :html, :xml, :json	
 
-  def register
-    user = User.where(user_params).first
-    if user == nil 
-      user = User.new(user_params)
-    	user.save
-    end
+  def create
+    
+     phone = get_phone_number(user_params[:phoneNum],user_params[:countryCode])
+     @user = User.where(:phoneNum => phone).first
+     if @user == nil
+        @user = User.new(:phoneNum => phone)
+        @user.save
+     end   
 
-    render :json => {
-                    :statusCode => RESPONSE_STATUS_OK,
-                    :userId => user.ID,
-                    :phoneNum => user.phoneNum,
-                    :UDID => user.UDID
-                    }
+     respond_to do |format|
+        format.html { redirect_to @user}
+        format.json { render :json => {:userID => @user.id, :statusCode => RESPONSE_OK}}
+     end   
   end
-  	
-  def registerForNotifications
-    user = User.where(:ID => registerForNotifications_params[:ID]).first
-    user.regID = registerForNotifications_params[:regID]
+
+  def register
+    user = User.where(:ID => register_params[:userID]).first
+    user.regID = register_params[:regID]
     user.save
     
     render :json => {
@@ -34,11 +34,11 @@ class UsersController < ApplicationController
 
 
   def user_params
-    params.require(:user).permit(:UDID, :phoneNum)
+    params.permit(:countryCode, :phoneNum)
   end
 
-  def registerForNotifications_params
-    params.require(:user).permit(:ID,:regID)
+  def register_params
+    params.permit(:userID,:regID)
   end
 
   end

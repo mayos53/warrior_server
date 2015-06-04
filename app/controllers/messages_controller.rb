@@ -12,11 +12,14 @@ class MessagesController < ApplicationController
 
   respond_to :html, :xml, :json	
 
+  
+
+
   def syncBlackList
     keywords = Keyword.all
     senders  = Sender.all
     words = keywords.map { |e|  e.word}
-    sender_nums= senders.map { |e|  e.PhoneNum}
+    sender_nums= senders.map { |e|  e.phoneNum}
 
     render :json => { :statusCode => RESPONSE_STATUS_OK,
      :keywords => words,
@@ -24,13 +27,25 @@ class MessagesController < ApplicationController
 
   end
 
+
+  def syncMessages
+    userID = syncMessages_params[:userID]
+    messages = Message.includes(:user).where(user.ID => userID) 
+    render :json => { :statusCode => RESPONSE_STATUS_OK,
+                      :messages => messages
+   }
+  end
+
   def reportSpams
     messages = reportSpam_params[:messages]
+    userID = reportSpam_params[:userID]
+    user = user.where(:ID => userID)
     @patterns = Pattern.all
     result = []
 
     messages.each do |message|
       message = Message.new(message)
+      message.user = user
       if message.processCode == MSG_PROCESS_CODE_SPAM
         pattern = checkPattern(message.content) 
         if pattern != nil
@@ -52,6 +67,7 @@ class MessagesController < ApplicationController
           message.save
         end
       elsif message.processCode == MSG_PROCESS_CODE_SUSPECT
+        result << message
         message.save
       end
     end
@@ -142,7 +158,11 @@ class MessagesController < ApplicationController
 
 
   def reportSpam_params
-    params.permit(:id,:pattern)
+    params.permit(:userID, messages: [:_ID, :userId, :phoneNum, :time, :content, :processCode])
+  end
+
+  def syncMessages_params
+    params.permit(:userID)
   end
 
   def setSpams_params

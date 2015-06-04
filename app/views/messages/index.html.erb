@@ -15,7 +15,7 @@
   
   <tbody>
     <%
-    @messages = Message.includes([:user]).where(:processCode => 3)%>
+    @messages = Message.includes([:user]).where(:processCode => 4)%>
     <% @messages.each_with_index do |message, index| %>
         <%= fields_for "messages[#{index}]", message do |message_fields| %>
           

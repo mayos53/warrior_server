@@ -1,5 +1,5 @@
 class MessagesController < ApplicationController
-
+  
 
   MSG_PROCESS_CODE_SPAM = 2
   MSG_PROCESS_CODE_PERSONAL_SPAM = 3
@@ -39,38 +39,45 @@ class MessagesController < ApplicationController
   def reportSpams
     messages = reportSpam_params[:messages]
     userID = reportSpam_params[:userID]
-    user = user.where(:ID => userID)
+    user = User.where(:ID => userID).first
     @patterns = Pattern.all
     result = []
 
     messages.each do |message|
       message = Message.new(message)
       message.user = user
-      if message.processCode == MSG_PROCESS_CODE_SPAM
-        pattern = checkPattern(message.content) 
-        if pattern != nil
-          spam = Spam.new
-          spam.message = message
-          spam.pattern = pattern
+      if !Message.where(:_ID => message._ID).where(:user => message.user).exists?
+        if message.processCode == MSG_PROCESS_CODE_SPAM
+          pattern = checkPattern(message.content) 
+          if pattern != nil
+            spam = Spam.new
+            spam.message = message
+            spam.pattern = pattern
 
-          # assume that sender is already in table
-          sender = Sender.where(:phoneNum => message.phoneNum).first
-          spam.sender = sender
-          spam.save
+            # assume that sender is already in table
+            sender = Sender.where(:phoneNum => message.phoneNum).first
+            spam.sender = sender
+            spam.save
 
-          if pattern.sure
-            message.processCode = MSG_PROCESS_CODE_SPAM
-          else
-            message.processCode = MSG_PROCESS_CODE_PERSONAL_SPAM  
+            if pattern.sure
+              message.processCode = MSG_PROCESS_CODE_SPAM
+            else
+              message.processCode = MSG_PROCESS_CODE_PERSONAL_SPAM  
+            end
+            result << message
+            message.save
           end
+        elsif message.processCode == MSG_PROCESS_CODE_SUSPECT
           result << message
           message.save
         end
-      elsif message.processCode == MSG_PROCESS_CODE_SUSPECT
-        result << message
-        message.save
       end
     end
+    
+    user.lastReportTime = reportSpam_params[:reportTime]
+    user.save
+
+    logger.info "** result[]  *** #{result.inspect}**"
     render :json => { :statusCode => RESPONSE_STATUS_OK,
                       :messages => result }
   end
@@ -137,6 +144,8 @@ class MessagesController < ApplicationController
   end  
 
   
+
+
   def checkPattern(content)
     @patterns.each do |pattern|
       if content == pattern.content
@@ -158,7 +167,7 @@ class MessagesController < ApplicationController
 
 
   def reportSpam_params
-    params.permit(:userID, messages: [:_ID, :userId, :phoneNum, :time, :content, :processCode])
+    params.permit(:reportTime, :userID, messages: [:_ID, :userId, :phoneNum, :time, :content, :processCode])
   end
 
   def syncMessages_params

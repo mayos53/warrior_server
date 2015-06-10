@@ -11,10 +11,8 @@ class UsersController < ApplicationController
         @user.save
      end   
 
-     respond_to do |format|
-        format.html { redirect_to @user}
-        format.json { render :json => {:userID => @user.id, :statusCode => RESPONSE_OK}}
-     end   
+       render :json => {:user => {:userID => @user.id, :lastReportTime => @user.lastReportTime}, :statusCode => RESPONSE_STATUS_OK}
+        
   end
 
   def register
@@ -28,7 +26,17 @@ class UsersController < ApplicationController
   end  
 
 
+  def random_number
+    1_001+ Random.rand(9_999 - 1_001) 
+  end 
 
+  # get phone with country_code
+   def get_phone_number(phone,countryCode)
+     if phone.start_with?("0")
+      phone = phone[1..-1]
+     end  
+     countryCode.to_s+phone
+   end   
 
 
 

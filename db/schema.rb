@@ -18,12 +18,12 @@ ActiveRecord::Schema.define(version: 0) do
   end
 
   create_table "Messages", primary_key: "ID", force: true do |t|
-    t.integer "userId"
+    t.integer "userId",                  default: 0, null: false
     t.string  "phoneNum",    limit: 20
     t.integer "time",        limit: 8
     t.string  "content",     limit: 300
     t.integer "processCode"
-    t.integer "_ID",                     null: false
+    t.integer "_ID",                                 null: false
   end
 
   add_index "messages", ["userId"], name: "userID_idx", using: :btree
@@ -37,10 +37,11 @@ ActiveRecord::Schema.define(version: 0) do
     t.string "phoneNum", limit: 20
   end
 
-  create_table "Spams", primary_key: "ID", force: true do |t|
-    t.integer "patternID"
-    t.integer "senderID"
-    t.integer "messageID"
+  create_table "Spams", id: false, force: true do |t|
+    t.integer "ID",                    null: false
+    t.integer "patternID", default: 0
+    t.integer "senderID",  default: 0
+    t.integer "messageID", default: 0, null: false
   end
 
   add_index "spams", ["messageID"], name: "MESSAGE_ID_idx1", using: :btree
@@ -48,9 +49,10 @@ ActiveRecord::Schema.define(version: 0) do
   add_index "spams", ["senderID"], name: "SENDER_ID_idx", using: :btree
 
   create_table "Users", primary_key: "ID", force: true do |t|
-    t.string "phoneNum", limit: 20
-    t.string "UDID",     limit: 20
-    t.string "regID",    limit: 20
+    t.string  "phoneNum",       limit: 20
+    t.string  "UDID",           limit: 20
+    t.string  "regID",          limit: 200
+    t.integer "lastReportTime", limit: 8
   end
 
 end

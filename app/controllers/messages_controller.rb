@@ -1,11 +1,19 @@
 class MessagesController < ApplicationController
   
 
+  MSG_PROCESS_CODE_OK = 1
   MSG_PROCESS_CODE_SPAM = 2
-  MSG_PROCESS_CODE_PERSONAL_SPAM = 3
+  MSG_PROCESS_CODE_CHOICE = 3
   MSG_PROCESS_CODE_SUSPECT = 4
 
   NOTIFICATION_TYPE_SYNCHRONIZE = 1
+
+  PATTERN_TYPE_SPAM = 3
+  PATTERN_TYPE_CHOICE = 2
+  PATTERN_TYPE_IGNORE = 1
+
+ 
+
 
 
 #meir abergel 0525995578 elgrabli
@@ -18,19 +26,23 @@ class MessagesController < ApplicationController
   def syncBlackList
     keywords = Keyword.all
     senders  = Sender.all
+    choicePatterns = Pattern.where(patternType: [PATTERN_TYPE_CHOICE,PATTERN_TYPE_IGNORE])
+
     words = keywords.map { |e|  e.word}
     sender_nums= senders.map { |e|  e.phoneNum}
 
     render :json => { :statusCode => RESPONSE_STATUS_OK,
      :keywords => words,
-     :senders => sender_nums }
+     :senders => sender_nums,
+     :choicePatterns => choicePatterns
+    }
 
   end
 
 
   def syncMessages
     userID = syncMessages_params[:userID]
-    messages = Message.includes(:user).where(user.ID => userID) 
+    messages = Message.includes(:user).where(:userId => userID) 
     render :json => { :statusCode => RESPONSE_STATUS_OK,
                       :messages => messages
    }
@@ -59,18 +71,21 @@ class MessagesController < ApplicationController
             spam.sender = sender
             spam.save
 
-            if pattern.sure
+            if pattern.patternType == PATTERN_TYPE_SPAM
               message.processCode = MSG_PROCESS_CODE_SPAM
-            else
-              message.processCode = MSG_PROCESS_CODE_PERSONAL_SPAM  
+              result << message
+            elsif pattern.patternType == PATTERN_TYPE_CHOICE
+              message.processCode = MSG_PROCESS_CODE_CHOICE  
+              result << message    
             end
-            result << message
             message.save
           end
         elsif message.processCode == MSG_PROCESS_CODE_SUSPECT
           result << message
           message.save
         end
+      else
+        result << message
       end
     end
     
@@ -88,12 +103,27 @@ class MessagesController < ApplicationController
 
     spams = setSpams_params[:spams]
     spams.each do |spam|
+      patternType = spam[:patternType]
+      pattern = spam[:pattern]
       message = Message.find(spam[:id])
-      #addPattern(spam.pattern, spam.sure)
-      addPattern(spam[:pattern], true)
+      if pattern != nil  
+          addPattern(pattern, patternType)
+      end    
       addSenderToBlackList(message.phoneNum)
-      message.processCode = MSG_PROCESS_CODE_SPAM
+      logger.info "***** patternType #{patternType}*********"
+
+
+      if patternType == PATTERN_TYPE_SPAM
+        message.processCode = MSG_PROCESS_CODE_SPAM
+      elsif patternType == PATTERN_TYPE_CHOICE
+        message.processCode = MSG_PROCESS_CODE_CHOICE
+      elsif patternType == PATTERN_TYPE_IGNORE
+        message.processCode = MSG_PROCESS_CODE_OK
+      end  
+      logger.info "** set spam process code *** #{message.inspect}**"
+
       message.save
+
     end
     result = sendNotification(NOTIFICATION_TYPE_SYNCHRONIZE)
     if result == true
@@ -135,7 +165,7 @@ class MessagesController < ApplicationController
           :type    => notificationType,  
         }
       }.to_json
-      request["Authorization"] = "key=AIzaSyDZlgujjp_pKOUftg3UXVTczyvf7ZHPR-Y"
+      request["Authorization"] = "key=AIzaSyDaKmTRNEqrFlexIIrFzmpFGJ71B4wYDoY"
       request["Content-Type"] = "application/json"
       response = http.request(request)
       logger.info "**********#{response.body.inspect}*****"
@@ -155,14 +185,22 @@ class MessagesController < ApplicationController
     return nil
   end
 
-  def addPattern(content, sure)
-    pattern = Pattern.new(:content => content, :sure => sure)
-    pattern.save
+  def addPattern(content, patternType)
+    pattern = Pattern.where(:content => content).first
+    if pattern == nil
+       pattern = Pattern.new(:content => content, :patternType => patternType)
+    else
+       pattern.patternType = patternType
+    end
+    pattern.save   
   end
 
   def addSenderToBlackList(phoneNum)
-    sender = Sender.new(:phoneNum => phoneNum)
-    sender.save
+    sender = Sender.where(:phoneNum => phoneNum).first
+    if sender == nil
+      sender = Sender.new(:phoneNum => phoneNum)
+      sender.save
+    end
   end
 
 
@@ -175,7 +213,7 @@ class MessagesController < ApplicationController
   end
 
   def setSpams_params
-    params.permit(spams: [:id,:pattern])
+    params.permit(spams: [:id,:pattern, :patternType])
   end
 
   def addKeyword_params

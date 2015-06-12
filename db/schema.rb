@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 0) do
+ActiveRecord::Schema.define(version: 20150610133554) do
 
   create_table "Keywords", primary_key: "ID", force: true do |t|
     t.string "word", limit: 30, null: false
@@ -29,9 +29,11 @@ ActiveRecord::Schema.define(version: 0) do
   add_index "messages", ["userId"], name: "userID_idx", using: :btree
 
   create_table "Patterns", primary_key: "ID", force: true do |t|
-    t.string  "content", limit: 300
-    t.integer "sure"
+    t.string  "content",     limit: 300
+    t.integer "patternType"
   end
+
+  add_index "patterns", ["patternType"], name: "Pattern_TYPE_idx", using: :btree
 
   create_table "Senders", primary_key: "ID", force: true do |t|
     t.string "phoneNum", limit: 20
@@ -47,6 +49,10 @@ ActiveRecord::Schema.define(version: 0) do
   add_index "spams", ["messageID"], name: "MESSAGE_ID_idx1", using: :btree
   add_index "spams", ["patternID"], name: "MESSAGE_ID_idx", using: :btree
   add_index "spams", ["senderID"], name: "SENDER_ID_idx", using: :btree
+
+  create_table "TypePatterns", primary_key: "ID", force: true do |t|
+    t.string "Type", limit: 45
+  end
 
   create_table "Users", primary_key: "ID", force: true do |t|
     t.string  "phoneNum",       limit: 20

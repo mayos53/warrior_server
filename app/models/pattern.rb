@@ -1,3 +1,3 @@
 class Pattern < ActiveRecord::Base
-	has_many :spams
+	has_one :typepattern, :foreign_key => "patternType"
 end

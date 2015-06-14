@@ -13,52 +13,52 @@
 
 ActiveRecord::Schema.define(version: 20150610133554) do
 
-  create_table "Keywords", primary_key: "ID", force: true do |t|
-    t.string "word", limit: 30, null: false
+  create_table Keywords, primary_key: ID, force: true do |t|
+    t.string word, limit: 30, null: false
   end
 
-  create_table "Messages", primary_key: "ID", force: true do |t|
-    t.integer "userId",                  default: 0, null: false
-    t.string  "phoneNum",    limit: 20
-    t.integer "time",        limit: 8
-    t.string  "content",     limit: 300
-    t.integer "processCode"
-    t.integer "_ID",                                 null: false
+  create_table Messages, primary_key: ID, force: true do |t|
+    t.integer userId,                  default: 0, null: false
+    t.string  phoneNum,    limit: 20
+    t.integer time,        limit: 8
+    t.string  content,     limit: 300
+    t.integer processCode
+    t.integer _ID,                                 null: false
   end
 
-  add_index "Messages", ["userId"], name: "userID_idx", using: :btree
+  add_index Messages, [userId], name: userID_idx, using: :btree
 
-  create_table "Patterns", primary_key: "ID", force: true do |t|
-    t.string  "content",     limit: 300
-    t.integer "patternType"
+  create_table Patterns, primary_key: ID, force: true do |t|
+    t.string  content,     limit: 300
+    t.integer patternType
   end
 
-  add_index "Patterns", ["patternType"], name: "Pattern_TYPE_idx", using: :btree
+  add_index Patterns, [patternType], name: Pattern_TYPE_idx, using: :btree
 
-  create_table "Senders", primary_key: "ID", force: true do |t|
-    t.string "phoneNum", limit: 20
+  create_table Senders, primary_key: ID, force: true do |t|
+    t.string phoneNum, limit: 20
   end
 
-  create_table "Spams", id: false, force: true do |t|
-    t.integer "ID",                    null: false
-    t.integer "patternID", default: 0
-    t.integer "senderID",  default: 0
-    t.integer "messageID", default: 0, null: false
+  create_table Spams, id: false, force: true do |t|
+    t.integer ID,                    null: false
+    t.integer patternID, default: 0
+    t.integer senderID,  default: 0
+    t.integer messageID, default: 0, null: false
   end
 
-  add_index "Spams", ["messageID"], name: "MESSAGE_ID_idx1", using: :btree
-  add_index "Spams", ["patternID"], name: "MESSAGE_ID_idx", using: :btree
-  add_index "Spams", ["senderID"], name: "SENDER_ID_idx", using: :btree
+  add_index Spams, [messageID], name: MESSAGE_ID_idx1, using: :btree
+  add_index Spams, [patternID], name: MESSAGE_ID_idx, using: :btree
+  add_index Spams, [senderID], name: SENDER_ID_idx, using: :btree
 
-  create_table "TypePatterns", primary_key: "ID", force: true do |t|
-    t.string "Type", limit: 45
+  create_table TypePatterns, primary_key: ID, force: true do |t|
+    t.string Type, limit: 45
   end
 
-  create_table "Users", primary_key: "ID", force: true do |t|
-    t.string  "phoneNum",       limit: 20
-    t.string  "UDID",           limit: 20
-    t.string  "regID",          limit: 200
-    t.integer "lastReportTime", limit: 8
+  create_table Users, primary_key: ID, force: true do |t|
+    t.string  phoneNum,       limit: 20
+    t.string  UDID,           limit: 20
+    t.string  regID,          limit: 200
+    t.integer lastReportTime, limit: 8
   end
 
 end

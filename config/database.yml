@@ -4,33 +4,34 @@
 #   Ensure the SQLite 3 gem is defined in your Gemfile
 #   gem 'sqlite3'
 development:
-  adapter: mysql2
+  adapter: postgresql
   encoding: utf8
-  database: warrior
-  pool: 5
-  username: root
-  password:
-  socket: /tmp/mysql.sock
+  database: d60icqua51pd2g
+  username: frilcsqbhnbyew
+  password: Uxafr1vheP8ODHApCrnsn6PGwr
+  port: 5432
+  host: ec2-54-228-180-92.eu-west-1.compute.amazonaws.com
+
 
 # Warning: The database defined as "test" will be erased and
 # re-generated from your development database when you run "rake".
 # Do not set this db to the same as development or production.
 test:
-  adapter: mysql2
+  adapter: postgresql
   encoding: utf8
-  database: warrior
-  pool: 5
-  username: root
-  password:
-  socket: /tmp/mysql.sock
+  database: d60icqua51pd2g
+  username: frilcsqbhnbyew
+  password: Uxafr1vheP8ODHApCrnsn6PGwr
+  port: 5432
+  host: ec2-54-228-180-92.eu-west-1.compute.amazonaws.com
 
 production:
-  adapter: mysql2
+  adapter: postgresql
   encoding: utf8
-  database: warrior
-  pool: 5
-  username: root
-  password:
-  socket: /tmp/mysql.sock
+  database: d60icqua51pd2g
+  username: frilcsqbhnbyew
+  password: Uxafr1vheP8ODHApCrnsn6PGwr
+  port: 5432
+  host: ec2-54-228-180-92.eu-west-1.compute.amazonaws.com
 
 

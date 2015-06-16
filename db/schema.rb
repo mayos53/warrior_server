@@ -21,7 +21,7 @@ ActiveRecord::Schema.define(version: 20150610133554) do
     t.integer "userId",                  default: 0, null: false
     t.string  "phoneNum",    limit: 20
     t.integer "time",        limit: 8
-    t.string  "content",     limit: 300
+    t.string  "content",     limit: 500
     t.integer "processCode"
     t.integer "_ID",                                 null: false
   end

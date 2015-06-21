@@ -13,7 +13,7 @@ class MessagesController < ApplicationController
   PATTERN_TYPE_IGNORE = 1
 
  
-
+#
 
 
 #meir abergel 0525995578 elgrabli

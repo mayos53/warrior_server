@@ -60,5 +60,5 @@ ActiveRecord::Schema.define(version: 20150610133554) do
     t.string  "regID",          limit: 200
     t.integer "lastReportTime", limit: 8
   end
-
+  add_r
 end

@@ -6,11 +6,12 @@
 development:
   adapter: postgresql
   encoding: utf8
-  database: d60icqua51pd2g
-  username: frilcsqbhnbyew
-  password: Uxafr1vheP8ODHApCrnsn6PGwr
+  database: d9tki6aep3v74a
+  username: aelkldfwcgtvhu
+  password: zSHQVF9spDyX1W1EHxyQfj3lrd
   port: 5432
-  host: ec2-54-228-180-92.eu-west-1.compute.amazonaws.com
+  host: ec2-54-235-134-167.compute-1.amazonaws.com
+
 
 
 # Warning: The database defined as "test" will be erased and
@@ -19,19 +20,19 @@ development:
 test:
   adapter: postgresql
   encoding: utf8
-  database: d60icqua51pd2g
-  username: frilcsqbhnbyew
-  password: Uxafr1vheP8ODHApCrnsn6PGwr
+  database: d9tki6aep3v74a
+  username: aelkldfwcgtvhu
+  password: zSHQVF9spDyX1W1EHxyQfj3lrd
   port: 5432
-  host: ec2-54-228-180-92.eu-west-1.compute.amazonaws.com
+  host: ec2-54-235-134-167.compute-1.amazonaws.com
 
 production:
   adapter: postgresql
   encoding: utf8
-  database: d60icqua51pd2g
-  username: frilcsqbhnbyew
-  password: Uxafr1vheP8ODHApCrnsn6PGwr
+  database: d9tki6aep3v74a
+  username: aelkldfwcgtvhu
+  password: zSHQVF9spDyX1W1EHxyQfj3lrd
   port: 5432
-  host: ec2-54-228-180-92.eu-west-1.compute.amazonaws.com
+  host: ec2-54-235-134-167.compute-1.amazonaws.com
 
 

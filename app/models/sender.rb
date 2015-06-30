@@ -1,3 +1,5 @@
 class Sender < ActiveRecord::Base
-	has_many :spams
+	belongs_to  :sender_type, :foreign_key => "sender_type"
+	has_many :sms_messages
+	has_many :message_patterns
 end

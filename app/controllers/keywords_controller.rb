@@ -4,7 +4,7 @@ class KeywordsController < ApplicationController
   # GET /keywords
   # GET /keywords.json
   def index
-    @keywords = Keyword.all
+    @keywords = SuspiciousKeyword.all
   end
 
   # GET /keywords/1
@@ -14,7 +14,7 @@ class KeywordsController < ApplicationController
 
   # GET /keywords/new
   def new
-    @keyword = Keyword.new
+    @keyword = SuspiciousKeyword.new
   end
 
   # GET /keywords/1/edit
@@ -24,11 +24,11 @@ class KeywordsController < ApplicationController
   # POST /keywords
   # POST /keywords.json
   def create
-    @keyword = Keyword.new(keyword_params)
+    @keyword = SuspiciousKeyword.new(keyword_params)
 
     respond_to do |format|
       if @keyword.save
-        format.html { redirect_to @keyword, notice: 'Keyword was successfully created.' }
+        format.html { redirect_to keywords_url, notice: 'Keyword was successfully created.' }
         format.json { render action: 'show', status: :created, location: @keyword }
       else
         format.html { render action: 'new' }
@@ -64,11 +64,11 @@ class KeywordsController < ApplicationController
   private
     # Use callbacks to share common setup or constraints between actions.
     def set_keyword
-      @keyword = Keyword.find(params[:id])
+      @keyword = SuspiciousKeyword.find(params[:id])
     end
 
     # Never trust parameters from the scary internet, only allow the white list through.
     def keyword_params
-      params.require(:keyword).permit(:word)
+      params.require(:suspicious_keyword).permit(:keyword)
     end
 end

@@ -1,11 +1,19 @@
 # Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
 
 one:
-  PhoneNum: MyString
   UDID: MyString
   RegID: MyString
+  LastReportTime: 2015-06-23 12:13:21
+  UserPhoneNum: MyString
+  UserAgreementTimeStamp: 2015-06-23 12:13:21
+  UserConfirmationTimeStamp: 2015-06-23 12:13:21
+  UserConfirmationNum: 1
 
 two:
-  PhoneNum: MyString
   UDID: MyString
   RegID: MyString
+  LastReportTime: 2015-06-23 12:13:21
+  UserPhoneNum: MyString
+  UserAgreementTimeStamp: 2015-06-23 12:13:21
+  UserConfirmationTimeStamp: 2015-06-23 12:13:21
+  UserConfirmationNum: 1

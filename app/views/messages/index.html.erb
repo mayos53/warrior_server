@@ -16,17 +16,17 @@
   
   <tbody>
     <%
-    @patternTypes = Typepattern.all.collect{ |u| [u.Type, u.ID]}
+    @patternTypes = PatternType.all.collect{ |u| [u.display_text, u.id]}
         logger.info "** patternTypes[]  *** #{@patternTypes.inspect}**"
 
-    @messages = Message.includes([:user]).where(:processCode => 4)%>
+    @messages = SmsMessage.includes([:user,:sender]).where(:message_status_id => MESSAGE_STATUS_SUSPICIOUS)%>
     <% @messages.each_with_index do |message, index| %>
         <%= fields_for "messages[#{index}]", message do |message_fields| %>
           
-          <tr class="data" id="<%=message.ID%>">
-            <td> <%= Time.at(message.time/1000) %> </td>
-            <td> <%= message.phoneNum %> </td>
-            <td> <%= message.content %> </td>
+          <tr class="data" id="<%=message.id%>">
+            <td> <%= Time.at(message.received_time/1000) %> </td>
+            <td> <%= message.sender.sender_from %> </td>
+            <td> <%= message.body_text %> </td>
             <td> <%= text_area_tag 'pattern', nil, size: "25x3" %> </td>
             <td><%=select_tag 'patternType', options_for_select(@patternTypes) %></td>
             <td> <%= check_box_tag 'spam'%> </td>
@@ -51,7 +51,7 @@
           spam =  $(this).find("#spam").prop('checked')
           patternType = $(this).find("#patternType").val()
           if(spam){
-              spams.spams.push({id:id, pattern:pattern, patternType:parseInt(patternType)}) 
+              spams.spams.push({id:id, pattern:pattern, pattern_type:parseInt(pattern_type)}) 
           }
          
 

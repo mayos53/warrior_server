@@ -1,0 +1,11 @@
+# Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  SenderID: 1
+  PatternTypeID: 1
+  PatternText: MyText
+
+two:
+  SenderID: 1
+  PatternTypeID: 1
+  PatternText: MyText

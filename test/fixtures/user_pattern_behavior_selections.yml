@@ -1,0 +1,13 @@
+# Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  UserPatternBehaviorSelectionID: 1
+  UserID: 1
+  MessagePatternID: 1
+  IsSpam: false
+
+two:
+  UserPatternBehaviorSelectionID: 1
+  UserID: 1
+  MessagePatternID: 1
+  IsSpam: false

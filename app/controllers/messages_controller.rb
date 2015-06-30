@@ -1,22 +1,31 @@
 class MessagesController < ApplicationController
   
 
-  MSG_PROCESS_CODE_OK = 1
-  MSG_PROCESS_CODE_SPAM = 2
-  MSG_PROCESS_CODE_CHOICE = 3
-  MSG_PROCESS_CODE_SUSPECT = 4
+  
 
   NOTIFICATION_TYPE_SYNCHRONIZE = 1
 
-  PATTERN_TYPE_SPAM = 3
-  PATTERN_TYPE_CHOICE = 2
+  
   PATTERN_TYPE_IGNORE = 1
+  PATTERN_TYPE_SPAM = 2
+  PATTERN_TYPE_USER_SELECTED = 3
+  PATTERN_TYPE_ELECTION = 4
+
+
+  SENDER_TYPE_SMS   = 2
+  SENDER_TYPE_EMAIL = 3
+  SENDER_TYPE_VOICECALL   = 4
+
+  MESSAGE_STATUS_SUSPICIOUS = 1
+  MESSAGE_STATUS_SPAM = 2
+  MESSAGE_STATUS_IGNORE = 3
+  MESSAGE_STATUS_USER_SELECTED = 4
+  MESSAGE_STATUS_ELECTION = 5
 
  
 #
 
 
-#meir abergel 0525995578 elgrabli
 
   respond_to :html, :xml, :json	
 
@@ -24,104 +33,101 @@ class MessagesController < ApplicationController
 
 
   def syncBlackList
-    keywords = Keyword.all
+    keywords = SuspiciousKeyword.all
     senders  = Sender.all
-    choicePatterns = Pattern.where(patternType: [PATTERN_TYPE_CHOICE,PATTERN_TYPE_IGNORE])
+    
+    user_patterns = MessagePattern.includes(:user_patterns)
+                                  .where("pattern_type_id = ? and user_patterns.user_id = ?",
+                                   PATTERN_TYPE_USER_SELECTED,syncLists_params[:userID])
+    other_patterns = MessagePattern.where("pattern_type_id = ? or pattern_type_id = ?",PATTERN_TYPE_SPAM, PATTERN_TYPE_IGNORE)    
+    all_patterns = user_patterns + other_patterns
 
-    words = keywords.map { |e|  e.word}
-    sender_nums= senders.map { |e|  e.phoneNum}
+    logger.info "** all_patterns *** #{all_patterns.inspect}**"
 
-    render :json => { :statusCode => RESPONSE_STATUS_OK,
+    patterns = []
+    all_patterns.each do |p|
+      if p.pattern_type_id == PATTERN_TYPE_USER_SELECTED 
+        patterns << { sender: p.sender_id, text: p.pattern_text, type: p.pattern_type_id, choice: p.user_patterns[0].is_spam}  
+      else
+        patterns << { sender: p.sender_id, text: p.pattern_text, type: p.pattern_type_id} 
+      end
+    end  
+    
+    logger.info "** patterns *** #{patterns.inspect}**"
+                               
+    words = keywords.map { |e|  e.keyword}
+    sender_nums= senders.map { |e|  { from: e.sender_from, type:e.sender_type}}
+
+    render :json => { :status_code => RESPONSE_STATUS_OK,
      :keywords => words,
      :senders => sender_nums,
-     :choicePatterns => choicePatterns
+     :patterns => patterns
     }
 
   end
 
 
   def syncMessages
-    userID = syncMessages_params[:userID]
-    messages = Message.includes(:user).where(:userId => userID) 
-    render :json => { :statusCode => RESPONSE_STATUS_OK,
+    messages = SMSMessage.where(:user_id => syncMessages_params[:user_id]) 
+    render :json => { :status_code => RESPONSE_STATUS_OK,
                       :messages => messages
-   }
+                    }
   end
 
   def reportSpams
     messages = reportSpam_params[:messages]
-    userID = reportSpam_params[:userID]
-    user = User.where(:ID => userID).first
-    @patterns = Pattern.all
+    user_id = reportSpam_params[:user_id]
+    user = User.find(user_id)
     result = []
 
     messages.each do |message|
-      message = Message.new(message)
-      message.user = user
-      if !Message.where(:_ID => message._ID).where(:user => message.user).exists?
-        if message.processCode == MSG_PROCESS_CODE_SPAM
-          pattern = checkPattern(message.content) 
-          if pattern != nil
-            spam = Spam.new
-            spam.message = message
-            spam.pattern = pattern
-
-            # assume that sender is already in table
-            sender = Sender.where(:phoneNum => message.phoneNum).first
-            spam.sender = sender
-            spam.save
-
-            if pattern.patternType == PATTERN_TYPE_SPAM
-              message.processCode = MSG_PROCESS_CODE_SPAM
-              result << message
-            elsif pattern.patternType == PATTERN_TYPE_CHOICE
-              message.processCode = MSG_PROCESS_CODE_CHOICE  
-              result << message    
-            end
-            message.save
-          end
-        elsif message.processCode == MSG_PROCESS_CODE_SUSPECT
-          result << message
-          message.save
-        end
-      else
-        result << message
-      end
+      smsMessage = SmsMessage.new()
+      smsMessage.user = user
+      smsMessage.message_status = MessageStatus.find(message[:message_status_id])
+      smsMessage.body_text = message[:body_text]
+      if message.message_status_id == MESSAGE_STATUS_SUSPICIOUS
+        sender = addSender(message[:phone_num],false)
+        smsMessage.sender = sender
+      elsif message.message_status_id == MESSAGE_STATUS_SPAM
+        sender = addSender(message[:phone_num],true)
+        smsMessage.sender = sender
+        addPattern(sender, message[:body_text], PATTERN_TYPE_SPAM)
+      end       
+      result << smsMessage
+      smsMessage.save  
     end
-    
-    user.lastReportTime = reportSpam_params[:reportTime]
+    user.last_report_time = reportSpam_params[:report_time]
     user.save
 
     logger.info "** result[]  *** #{result.inspect}**"
-    render :json => { :statusCode => RESPONSE_STATUS_OK,
-                      :messages => result }
-  end
+    render :json => { :status_code => RESPONSE_STATUS_OK,
+      :messages => result }
+    end
 
   def setSpams
     logger.info "** request set Spams *** #{setSpams_params.inspect}**"
-
-
     spams = setSpams_params[:spams]
     spams.each do |spam|
-      patternType = spam[:patternType]
+      patternType = spam[:pattern_type]
       pattern = spam[:pattern]
-      message = Message.find(spam[:id])
-      if pattern != nil  
-          addPattern(pattern, patternType)
-      end    
-      addSenderToBlackList(message.phoneNum)
-      logger.info "***** patternType #{patternType}*********"
+      smsMessage = SMSMessage.includes(:sender).find(spam[:id])
 
-
-      if patternType == PATTERN_TYPE_SPAM
-        message.processCode = MSG_PROCESS_CODE_SPAM
-      elsif patternType == PATTERN_TYPE_CHOICE
-        message.processCode = MSG_PROCESS_CODE_CHOICE
-      elsif patternType == PATTERN_TYPE_IGNORE
-        message.processCode = MSG_PROCESS_CODE_OK
-      end  
+      isInBlackList = false
+      case patternType
+      when PATTERN_TYPE_SPAM
+        smsMessage.message_status = MESSAGE_STATUS_SPAM
+        isInBlackList = true
+      when PATTERN_TYPE_IGNORE
+        smsMessage.message_status = MESSAGE_STATUS_IGNORE
+      when PATTERN_TYPE_USER_SELECTED
+        smsMessage.message_status = MESSAGE_STATUS_USER_SELECTED
+      when PATTERN_TYPE_ELECTION
+        smsMessage.message_status = MESSAGE_STATUS_ELECTION
+      end
+      smsMessage.sender.is_sender_black_list = isInBlackList
+      smsMessage.save
+      addPattern(smsMessage.sender, pattern, patternType)   
       logger.info "** set spam process code *** #{message.inspect}**"
-
       message.save
 
     end
@@ -137,7 +143,7 @@ class MessagesController < ApplicationController
 
  def addKeyword
     word = addKeyword_params[:keyword]
-    keyword = Keyword.new(:word => word)
+    keyword = SuspiciousKeyword.new(:word => word)
     keyword.save
     
     respond_to do |format|
@@ -173,47 +179,52 @@ class MessagesController < ApplicationController
       return response_parsed["failure"] > 0
   end  
 
-  
-
-
-  def checkPattern(content)
-    @patterns.each do |pattern|
-      if content == pattern.content
-        return pattern
+  def addPattern(messageSender, messagePattern, patternType)
+    messagePatterns = MessagePattern.where(:sender => sender)
+    messagePatterns = messagePatterns.sort_by{|x| x.pattern_text.length}
+    
+    messagePatterns.each do |pattern|
+      if pattern == messagePattern    
+        foundPattern = messagePattern
+        if messagePattern.pattern_type_id == PATTERN_TYPE_SPAM
+          pattern.pattern_type_id = PATTERN_TYPE_SPAM
+          pattern.save
+        end
+        break
       end
     end
-    return nil
-  end
 
-  def addPattern(content, patternType)
-    pattern = Pattern.where(:content => content).first
-    if pattern == nil
-       pattern = Pattern.new(:content => content, :patternType => patternType)
-    else
-       pattern.patternType = patternType
+    if foundPattern == nil
+      messagePattern = MessagePattern.new(:sender => sender, :pattern_text => messagePattern, :pattern_type_id => patternType)
+      messagePattern.save
     end
-    pattern.save   
   end
 
-  def addSenderToBlackList(phoneNum)
-    sender = Sender.where(:phoneNum => phoneNum).first
+  def addSender(phoneNum, isBlackList)
+    sender = Sender.find(:phone_num => phoneNum)
     if sender == nil
-      sender = Sender.new(:phoneNum => phoneNum)
-      sender.save
+      sender = Sender.new(:phone_num => phoneNum)
     end
+    sender.is_sender_black_list = isBlackList
+    sender.save
+    return sender
   end
 
+
+  def syncLists_params
+    params.permit(:user_id)
+  end
 
   def reportSpam_params
-    params.permit(:reportTime, :userID, messages: [:_ID, :userId, :phoneNum, :time, :content, :processCode])
+    params.permit(:report_time, :user_id, messages: [:user_id, :phone_num, :message_status_id, :body_text, :received_time])
   end
 
   def syncMessages_params
-    params.permit(:userID)
+    params.permit(:user_id)
   end
 
   def setSpams_params
-    params.permit(spams: [:id,:pattern, :patternType])
+    params.permit(spams: [:id, :pattern, :pattern_type])
   end
 
   def addKeyword_params

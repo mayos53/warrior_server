@@ -1,0 +1,17 @@
+# Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  SMSMessagesID: 1
+  UserID: 1
+  SenderID: 1
+  MessageStatusID: 1
+  RecievedTimeStamp: 2015-06-23 12:12:38
+  BodyText: MyText
+
+two:
+  SMSMessagesID: 1
+  UserID: 1
+  SenderID: 1
+  MessageStatusID: 1
+  RecievedTimeStamp: 2015-06-23 12:12:38
+  BodyText: MyText

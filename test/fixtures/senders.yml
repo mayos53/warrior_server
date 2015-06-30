@@ -1,7 +1,11 @@
 # Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
 
 one:
-  PhoneNum: MyString
+  SenderFrom: MyString
+  SenderType: 1
+  IsSenderBlackList: false
 
 two:
-  PhoneNum: MyString
+  SenderFrom: MyString
+  SenderType: 1
+  IsSenderBlackList: false

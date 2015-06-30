@@ -11,54 +11,96 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20150610133554) do
+ActiveRecord::Schema.define(version: 0) do
 
-  create_table "keywords", primary_key: "ID", force: true do |t|
-    t.string "word", limit: 30, null: false
+  # These are extensions that must be enabled in order to support this database
+  enable_extension "plpgsql"
+
+  create_table "message_patterns", force: true do |t|
+    t.integer "sender_id",       null: false
+    t.integer "pattern_type_id", null: false
+    t.text    "pattern_text",    null: false
   end
 
-  create_table "messages", primary_key: "ID", force: true do |t|
-    t.integer "userId",                  default: 0, null: false
-    t.string  "phoneNum",    limit: 20
-    t.integer "time",        limit: 8
-    t.string  "content",     limit: 500
-    t.integer "processCode"
-    t.integer "_ID",                                 null: false
+  add_index "message_patterns", ["id"], name: "MessagePattern_MessagePatternID_idx", using: :btree
+  add_index "message_patterns", ["id"], name: "MessagePattern_MessagePatternID_key", unique: true, using: :btree
+
+  create_table "message_statuses", id: false, force: true do |t|
+    t.integer "id",                       null: false
+    t.string  "internal_name", limit: 50, null: false
+    t.string  "display_text",  limit: 50, null: false
   end
 
-  add_index "messages", ["userId"], name: "userID_idx", using: :btree
+  add_index "message_statuses", ["id"], name: "MessageStatus_MessageStatusID_key", unique: true, using: :btree
+  add_index "message_statuses", ["id"], name: "MessageStatus_MessageStatus_ID_idx", using: :btree
 
-  create_table "patterns", primary_key: "ID", force: true do |t|
-    t.string  "content",     limit: 300
-    t.integer "patternType"
+  create_table "pattern_types", force: true do |t|
+    t.string "internal_name", limit: 50, null: false
+    t.string "display_text",  limit: 50, null: false
   end
 
-  add_index "patterns", ["patternType"], name: "Pattern_TYPE_idx", using: :btree
+  add_index "pattern_types", ["id"], name: "PatternType_PatternTypeID_idx", using: :btree
+  add_index "pattern_types", ["id"], name: "PatternType_PatternTypeID_key", unique: true, using: :btree
 
-  create_table "senders", primary_key: "ID", force: true do |t|
-    t.string "phoneNum", limit: 20
+  create_table "sender_types", force: true do |t|
+    t.string "internal_name", limit: 50, null: false
+    t.string "display_text",  limit: 50, null: false
   end
 
-  create_table "spams", id: false, force: true do |t|
-    t.integer "ID",                    null: false
-    t.integer "patternID", default: 0
-    t.integer "senderID",  default: 0
-    t.integer "messageID", default: 0, null: false
+  add_index "sender_types", ["id"], name: "SenderType_SenderTypeID_idx", using: :btree
+  add_index "sender_types", ["id"], name: "SenderType_SenderTypeID_key", unique: true, using: :btree
+
+  create_table "senders", force: true do |t|
+    t.string  "sender_from",          limit: 50
+    t.integer "sender_type",                                     null: false
+    t.boolean "is_sender_black_list",            default: false, null: false
   end
 
-  add_index "spams", ["messageID"], name: "MESSAGE_ID_idx1", using: :btree
-  add_index "spams", ["patternID"], name: "MESSAGE_ID_idx", using: :btree
-  add_index "spams", ["senderID"], name: "SENDER_ID_idx", using: :btree
+  add_index "senders", ["id"], name: "Sender_SenderID_idx", using: :btree
+  add_index "senders", ["id"], name: "Sender_SenderID_key", unique: true, using: :btree
 
-  create_table "typepatterns", primary_key: "ID", force: true do |t|
-    t.string "Type", limit: 45
+  create_table "sms_messages", id: false, force: true do |t|
+    t.integer "id",                limit: 8, null: false
+    t.integer "user_id",           limit: 8, null: false
+    t.integer "sender_id",                   null: false
+    t.integer "message_status_id",           null: false
+    t.text    "body_text",                   null: false
+    t.integer "received_time",     limit: 8, null: false
   end
 
-  create_table "users", primary_key: "ID", force: true do |t|
-    t.string  "phoneNum",       limit: 20
-    t.string  "UDID",           limit: 20
-    t.string  "regID",          limit: 200
-    t.integer "lastReportTime", limit: 8
+  add_index "sms_messages", ["id"], name: "SMSMessages_SMSMessagesID_idx", using: :btree
+  add_index "sms_messages", ["id"], name: "SMSMessages_SMSMessagesID_key", unique: true, using: :btree
+  add_index "sms_messages", ["message_status_id"], name: "fki_MessageStatus", using: :btree
+  add_index "sms_messages", ["sender_id"], name: "fki_SenderID", using: :btree
+  add_index "sms_messages", ["user_id"], name: "fki_UserID (FK)", using: :btree
+
+  create_table "suspicious_keywords", force: true do |t|
+    t.string "keyword", limit: 60, null: false
   end
-  add_r
+
+  add_index "suspicious_keywords", ["id"], name: "SuspiciousKeyWords_SuspiciousKeyWordsID_idx", using: :btree
+  add_index "suspicious_keywords", ["id"], name: "SuspiciousKeyWords_SuspiciousKeyWordsID_key", unique: true, using: :btree
+
+  create_table "user_patterns", force: true do |t|
+    t.integer "user_id",            limit: 8,                 null: false
+    t.integer "message_pattern_id",                           null: false
+    t.boolean "is_spam",                      default: false, null: false
+  end
+
+  add_index "user_patterns", ["message_pattern_id"], name: "fki_MessagePatternID", using: :btree
+  add_index "user_patterns", ["user_id"], name: "fki_UserID", using: :btree
+
+  create_table "users", force: true do |t|
+    t.string  "udid",              limit: 36
+    t.string  "reg_id",            limit: 40
+    t.string  "phone_num",         limit: 12
+    t.integer "confirmation_code", limit: 2
+    t.integer "last_report_time",  limit: 8
+    t.integer "agreement_time",    limit: 8
+    t.integer "confirmation_time", limit: 8
+  end
+
+  add_index "users", ["id"], name: "Users_UserID_idx", using: :btree
+  add_index "users", ["id"], name: "Users_UserID_key", unique: true, using: :btree
+
 end

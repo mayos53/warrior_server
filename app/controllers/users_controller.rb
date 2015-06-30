@@ -4,24 +4,24 @@ class UsersController < ApplicationController
 
   def create
     
-     phone = get_phone_number(user_params[:phoneNum],user_params[:countryCode])
-     @user = User.where(:phoneNum => phone).first
+     phone = get_phone_number(user_params[:phone_num],user_params[:country_code])
+     @user = User.where(:phone_num => phone).first
      if @user == nil
-        @user = User.new(:phoneNum => phone)
+        @user = User.new(:phone_num => phone)
         @user.save
      end   
 
-       render :json => {:user => {:userID => @user.id, :lastReportTime => @user.lastReportTime}, :statusCode => RESPONSE_STATUS_OK}
+       render :json => {:user => {:user_id => @user.id, :last_report_time => @user.last_report_time}, :status_code => RESPONSE_STATUS_OK}
         
   end
 
   def register
-    user = User.where(:ID => register_params[:userID]).first
-    user.regID = register_params[:regID]
+    user = User.find(register_params[:user_id])
+    user.reg_id = register_params[:reg_id]
     user.save
     
     render :json => {
-                      :statusCode => RESPONSE_STATUS_OK
+                      :status_code => RESPONSE_STATUS_OK
                     }
   end  
 
@@ -42,11 +42,11 @@ class UsersController < ApplicationController
 
 
   def user_params
-    params.permit(:countryCode, :phoneNum)
+    params.permit(:country_code, :phone_num)
   end
 
   def register_params
-    params.permit(:userID,:regID)
+    params.permit(:user_id,:reg_id)
   end
 
   end

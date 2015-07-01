@@ -49,18 +49,17 @@ class MessagesController < ApplicationController
       if p.pattern_type_id == PATTERN_TYPE_USER_SELECTED 
         patterns << { sender: p.sender_id, text: p.pattern_text, type: p.pattern_type_id, choice: p.user_patterns[0].is_spam}  
       else
-        patterns << { sender: p.sender_id, text: p.pattern_text, type: p.pattern_type_id} 
+        patterns << p
       end
     end  
     
     logger.info "** patterns *** #{patterns.inspect}**"
                                
     words = keywords.map { |e|  e.keyword}
-    sender_nums= senders.map { |e|  { from: e.sender_from, type:e.sender_type}}
 
     render :json => { :status_code => RESPONSE_STATUS_OK,
      :keywords => words,
-     :senders => sender_nums,
+     :senders => senders,
      :patterns => patterns
     }
 
@@ -68,7 +67,7 @@ class MessagesController < ApplicationController
 
 
   def syncMessages
-    messages = SMSMessage.where(:user_id => syncMessages_params[:user_id]) 
+    messages = SmsMessage.where(:user_id => syncMessages_params[:user_id]) 
     render :json => { :status_code => RESPONSE_STATUS_OK,
                       :messages => messages
                     }
@@ -85,10 +84,11 @@ class MessagesController < ApplicationController
       smsMessage.user = user
       smsMessage.message_status = MessageStatus.find(message[:message_status_id])
       smsMessage.body_text = message[:body_text]
-      if message.message_status_id == MESSAGE_STATUS_SUSPICIOUS
+      smsMessage.received_time =  message[:received_time] 
+      if message[:message_status_id] == MESSAGE_STATUS_SUSPICIOUS
         sender = addSender(message[:phone_num],false)
         smsMessage.sender = sender
-      elsif message.message_status_id == MESSAGE_STATUS_SPAM
+      elsif message[:message_status_id] == MESSAGE_STATUS_SPAM
         sender = addSender(message[:phone_num],true)
         smsMessage.sender = sender
         addPattern(sender, message[:body_text], PATTERN_TYPE_SPAM)
@@ -110,36 +110,47 @@ class MessagesController < ApplicationController
     spams.each do |spam|
       patternType = spam[:pattern_type]
       pattern = spam[:pattern]
-      smsMessage = SMSMessage.includes(:sender).find(spam[:id])
-
-      isInBlackList = false
-      case patternType
-      when PATTERN_TYPE_SPAM
-        smsMessage.message_status = MESSAGE_STATUS_SPAM
-        isInBlackList = true
-      when PATTERN_TYPE_IGNORE
-        smsMessage.message_status = MESSAGE_STATUS_IGNORE
-      when PATTERN_TYPE_USER_SELECTED
-        smsMessage.message_status = MESSAGE_STATUS_USER_SELECTED
-      when PATTERN_TYPE_ELECTION
-        smsMessage.message_status = MESSAGE_STATUS_ELECTION
-      end
-      smsMessage.sender.is_sender_black_list = isInBlackList
-      smsMessage.save
-      addPattern(smsMessage.sender, pattern, patternType)   
-      logger.info "** set spam process code *** #{message.inspect}**"
-      message.save
-
+      sender_id = SmsMessage.find(spam[:id]).sender_id
+      messagePattern = addPattern(sender_id, pattern, patternType)   
+      setMessageStatus(messagePattern)
     end
-    result = sendNotification(NOTIFICATION_TYPE_SYNCHRONIZE)
-    if result == true
-      responseStatus = RESPONSE_STATUS_OK
-    else
-      responseStatus = RESPONSE_STATUS_ERROR
-    end
+
+    # result = sendNotification(NOTIFICATION_TYPE_SYNCHRONIZE)
+    # if result == true
+    #   responseStatus = RESPONSE_STATUS_OK
+    # else
+    #   responseStatus = RESPONSE_STATUS_ERROR
+    # end
+
+
     render :js => "window.location = '/messages'"
 
  end  
+
+ def setMessageStatus(messagePattern)
+    messages = SmsMessage.where(:sender_id => messagePattern.sender_id)
+    logger.info "** MESSAGES COUNT  #{messages.count}**"
+    messages.each { |message| 
+      logger.info "********** compare #{message.body_text} and #{messagePattern.pattern_text} *****"
+      if message.body_text.include? messagePattern.pattern_text
+        logger.info "********** include *****"
+        logger.info "********** patternType : #{}{messagePattern.pattern_type_id} *****"
+        case messagePattern.pattern_type_id
+          when PATTERN_TYPE_SPAM
+            logger.info "** set PATTERN type SPAM  #{message.sender_id}**"
+            message.message_status_id = MESSAGE_STATUS_SPAM
+          when PATTERN_TYPE_IGNORE
+            message.message_status_id = MESSAGE_STATUS_IGNORE
+          when PATTERN_TYPE_USER_SELECTED
+            message.message_status_id = MESSAGE_STATUS_USER_SELECTED
+          when PATTERN_TYPE_ELECTION
+            message.message_status_id = MESSAGE_STATUS_ELECTION
+        end
+        message.save
+      end
+    }
+ end
+
 
  def addKeyword
     word = addKeyword_params[:keyword]
@@ -164,7 +175,7 @@ class MessagesController < ApplicationController
     request = Net::HTTP::Post.new(uri.request_uri)
 
     users = User.all
-    regIDs = users.map { |user| user.regID }
+    regIDs = users.map { |user| user.reg_id }
     request.body= {
         :registration_ids =>  regIDs,
         :data => {
@@ -179,31 +190,35 @@ class MessagesController < ApplicationController
       return response_parsed["failure"] > 0
   end  
 
-  def addPattern(messageSender, messagePattern, patternType)
-    messagePatterns = MessagePattern.where(:sender => sender)
+  def addPattern(messageSenderId, messagePattern, patternType)
+    messagePatterns = MessagePattern.where(:sender_id => messageSenderId)
     messagePatterns = messagePatterns.sort_by{|x| x.pattern_text.length}
-    
+    foundPattern = nil
     messagePatterns.each do |pattern|
-      if pattern == messagePattern    
-        foundPattern = messagePattern
-        if messagePattern.pattern_type_id == PATTERN_TYPE_SPAM
+      if pattern.pattern_text == messagePattern    
+        foundPattern = pattern
+
+        # Override existing pattern only if the new pattern is SPAM
+        if patternType == PATTERN_TYPE_SPAM
           pattern.pattern_type_id = PATTERN_TYPE_SPAM
           pattern.save
         end
         break
       end
     end
-
     if foundPattern == nil
-      messagePattern = MessagePattern.new(:sender => sender, :pattern_text => messagePattern, :pattern_type_id => patternType)
-      messagePattern.save
+      newPattern = MessagePattern.new(:sender_id => messageSenderId, :pattern_text => messagePattern, :pattern_type_id => patternType)
+      newPattern.save
+      return newPattern
+    else
+      return foundPattern
     end
   end
 
   def addSender(phoneNum, isBlackList)
-    sender = Sender.find(:phone_num => phoneNum)
+    sender = Sender.where(:sender_from => phoneNum).first
     if sender == nil
-      sender = Sender.new(:phone_num => phoneNum)
+      sender = Sender.new(:sender_from => phoneNum,:sender_type_id => SENDER_TYPE_SMS)
     end
     sender.is_sender_black_list = isBlackList
     sender.save

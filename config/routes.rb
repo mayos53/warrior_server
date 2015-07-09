@@ -10,6 +10,7 @@ Warrior::Application.routes.draw do
         post 'reportSpams'
         post 'setSpams'
         get  'addKeyword'
+        get  'sendSMS' 
       end
   end
 

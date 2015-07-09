@@ -16,14 +16,37 @@ ActiveRecord::Schema.define(version: 0) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
-  create_table "message_patterns", force: true do |t|
-    t.integer "sender_id",       null: false
-    t.integer "pattern_type_id", null: false
-    t.text    "pattern_text",    null: false
+  create_table "companies", id: false, force: true do |t|
+    t.integer "id",                          null: false
+    t.string  "company_name",     limit: 70
+    t.string  "company_phonenum", limit: 10
+    t.string  "company_faxnum",   limit: 10
+    t.string  "company_hj_url",   limit: 70
+    t.string  "company_id",       limit: 9,  null: false
   end
 
-  add_index "message_patterns", ["id"], name: "MessagePattern_MessagePatternID_idx", using: :btree
-  add_index "message_patterns", ["id"], name: "MessagePattern_MessagePatternID_key", unique: true, using: :btree
+  add_index "companies", ["company_id"], name: "company_id_key", unique: true, using: :btree
+  add_index "companies", ["id"], name: "id_key", unique: true, using: :btree
+
+  create_table "company_for_senders", id: false, force: true do |t|
+    t.integer "id",                   null: false
+    t.integer "company_id"
+    t.integer "sender_id",  limit: 8
+  end
+
+  add_index "company_for_senders", ["company_id"], name: "fki_companyID", using: :btree
+  add_index "company_for_senders", ["id"], name: "company_for_sender_id_key", unique: true, using: :btree
+  add_index "company_for_senders", ["sender_id"], name: "fki_senderID", using: :btree
+
+  create_table "message_patterns", force: true do |t|
+    t.integer "pattern_type_id"
+    t.text    "pattern_text"
+    t.integer "sender_id"
+  end
+
+  add_index "message_patterns", ["id"], name: "message_patterns_id_idx", using: :btree
+  add_index "message_patterns", ["id"], name: "message_patterns_id_key", unique: true, using: :btree
+  add_index "message_patterns", ["pattern_type_id"], name: "fki_PatternTypeID", using: :btree
 
   create_table "message_statuses", id: false, force: true do |t|
     t.integer "id",                       null: false
@@ -52,15 +75,14 @@ ActiveRecord::Schema.define(version: 0) do
 
   create_table "senders", force: true do |t|
     t.string  "sender_from",          limit: 50
-    t.integer "sender_type",                                     null: false
     t.boolean "is_sender_black_list",            default: false, null: false
+    t.integer "sender_type_id",       limit: 8
   end
 
   add_index "senders", ["id"], name: "Sender_SenderID_idx", using: :btree
   add_index "senders", ["id"], name: "Sender_SenderID_key", unique: true, using: :btree
 
-  create_table "sms_messages", id: false, force: true do |t|
-    t.integer "id",                limit: 8, null: false
+  create_table "sms_messages", force: true do |t|
     t.integer "user_id",           limit: 8, null: false
     t.integer "sender_id",                   null: false
     t.integer "message_status_id",           null: false
@@ -92,7 +114,7 @@ ActiveRecord::Schema.define(version: 0) do
 
   create_table "users", force: true do |t|
     t.string  "udid",              limit: 36
-    t.string  "reg_id",            limit: 40
+    t.string  "reg_id"
     t.string  "phone_num",         limit: 12
     t.integer "confirmation_code", limit: 2
     t.integer "last_report_time",  limit: 8

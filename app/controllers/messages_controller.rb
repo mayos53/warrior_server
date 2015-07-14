@@ -33,14 +33,15 @@ class MessagesController < ApplicationController
     senders  = Sender.all
     message_patterns = MessagePattern.all   
 
-    user_patterns = UserPattern.where("user_id = ?", syncLists_params[:user_id])                           
+    user_patterns = UserPattern.where({:user_id => syncLists_params[:user_id]})                           
     words = keywords.map { |e|  e.keyword}
 
     render :json => { :status_code => RESPONSE_STATUS_OK,
      :keywords => words,
+     :user_patterns => user_patterns,
      :senders => senders,
-     :patterns => message_patterns,
-     :user_patterns => user_patterns
+     :patterns => message_patterns
+     
     }
 
   end
@@ -55,12 +56,19 @@ class MessagesController < ApplicationController
     user_patterns_id = syncMessages_params[:user_patterns_id]
     user_selections_value = syncMessages_params[:user_selections_value]
     
-    message_ids.zip(statuses).each do |message_id,status|
-      SmsMessage.find(message_id).update_columns(:message_status_id => status)
+    if user_patterns_id != nil
+      user_patterns_id.zip(user_selections_value).each do |user_pattern_id,user_selection|
+        if UserPattern.where({:user_id =>user_id ,:message_pattern_id => user_pattern_id}).exists?
+          UserPattern.where({:user_id =>user_id ,:message_pattern_id => user_pattern_id}).first.update_columns({:is_spam => user_selection})
+        else
+          UserPattern.new({:user_id =>user_id ,:message_pattern_id => user_pattern_id,:is_spam => user_selection}).save
+        end
+      end
     end
-
-    user_patterns_id.zip(user_selections_value).each do |user_pattern_id,user_selection|
-      UserPattern.new({:user_id =>user_id ,:message_pattern_id => user_pattern_id,:is_spam => user_selection}).save
+    if message_ids != nil
+      message_ids.zip(statuses).each do |message_id,status|
+        SmsMessage.find(message_id).update_columns(:message_status_id => status)
+      end
     end
     
     message_patterns = MessagePattern.all   
@@ -101,12 +109,27 @@ class MessagesController < ApplicationController
       if message[:message_status_id] == MESSAGE_STATUS_SUSPICIOUS
         sender = addSender(message[:phone_num],false)
         smsMessage.sender = sender
-      else
+      else 
+        if message[:message_status_id] == MESSAGE_STATUS_USER_SELECTED
+           pattern = getPattern(message[:sender_id],message[:body_text])
+           if pattern != nil
+              user_pattern = UserPattern.where({:user_id => user_id, :message_pattern_id => pattern.id})
+              if user_pattern.exists?
+                 if user_pattern.first.is_spam?
+                    smsMessage.message_status_id = MESSAGE_STATUS_USER_SELECTED_SPAM
+                  else
+                    smsMessage.message_status_id = MESSAGE_STATUS_USER_SELECTED_IGNORE
+                  end
+              end
+           end
+        end
         smsMessage.sender_id = message[:sender_id]
       end       
       result << smsMessage
       smsMessage.save  
     end
+
+
     user.last_report_time = reportSpam_params[:report_time]
     user.save
 
@@ -226,6 +249,20 @@ class MessagesController < ApplicationController
     end
   end
 
+  def getPattern(messageSenderId,messageBody)
+    messagePatterns = MessagePattern.where({:sender_id => messageSenderId})
+    messagePatterns = messagePatterns.sort_by{|x| x.pattern_text.length}
+    messagePatterns.each do |pattern|
+      if messageBody.include? pattern.pattern_text
+        return pattern
+      end
+    end
+    return nil
+  end
+
+
+  
+
   def addSender(phoneNum, isBlackList)
     sender = Sender.where(:sender_from => phoneNum).first
     if sender == nil
@@ -236,22 +273,7 @@ class MessagesController < ApplicationController
     return sender
   end
 
-  def sendSMS
-    client = Savon.client(wsdl: "https://sapi.itnewsletter.co.il/webservices/webservicesms.asmx?wsdl", ssl_verify_mode: :none)
-      
-    
-    response = client.call(:send_sm_srecipients, message:{
-      :un => "trial39",
-        :pw => "cac5678", 
-        :accid => 362,
-        :sysPW => "itnewslettrSMS",
-        :t => "2015/06/24 16:53:12",
-        :txtUserCellular => "Test Sender",
-        :destination => "0508840489",
-        :txtSMSmessage => "קוד אימות"
-    })        
-  end
-
+ 
 
 
   def syncLists_params

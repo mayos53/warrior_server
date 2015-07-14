@@ -25,9 +25,9 @@ SenderType.create([{ id: SENDER_TYPE_SMS, internal_name:'SMS',display_text:'הו
 
 
 MessageStatus.create([{ id: MESSAGE_STATUS_SUSPICIOUS, internal_name:'Suspicious',display_text:'חשוד'},
-					 { id: MESSAGE_STATUS_SPAM, internal_name:'Spam',display_text:'ספאם'},
-					 { id: MESSAGE_STATUS_IGNORE, internal_name:'Ignore',display_text:'התעלם'},
-					 { id: MESSAGE_STATUS_USER_SELECTED, internal_name:'User Selected',display_text:'בחירת משתמש'},
-					 { id: MESSAGE_STATUS_ELECTION, internal_name:'Election',display_text:'בחירות'},
+					 {id: MESSAGE_STATUS_SPAM, internal_name:'Spam',display_text:'ספאם'},
+					 {id: MESSAGE_STATUS_IGNORE, internal_name:'Ignore',display_text:'התעלם'},
+					 {id: MESSAGE_STATUS_USER_SELECTED, internal_name:'User Selected',display_text:'בחירת משתמש'},
+					 {id: MESSAGE_STATUS_ELECTION, internal_name:'Election',display_text:'בחירות'},
 					 {id: MESSAGE_STATUS_USER_SELECTED_SPAM, internal_name:'User Spam',display_text:'ספאם עבור המשתמש'},
 					 {id: MESSAGE_STATUS_USER_SELECTED_IGNORE, internal_name:'User Ignore',display_text:'המשתמש התעלם'}])

@@ -5,18 +5,20 @@ Warrior::Application.routes.draw do
 
   resources :messages do
       collection do
-        get  'syncBlackList'
+        post  'syncBlackList'
         post 'syncMessages'
         post 'reportSpams'
         post 'setSpams'
         get  'addKeyword'
         get  'sendSMS' 
+
       end
   end
 
   resources :users do
       collection do
         post 'register'
+        post 'confirmCode' 
       end
   end
 

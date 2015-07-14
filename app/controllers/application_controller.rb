@@ -7,6 +7,8 @@ class ApplicationController < ActionController::Base
   RESPONSE_STATUS_OK    = 1
   RESPONSE_STATUS_ERROR = -1
 
+  RESPONSE_STATUS_INCORRECT_CODE = -200
+
 
   skip_before_action :verify_authenticity_token
 

@@ -10,6 +10,7 @@
 PatternType.delete_all
 SenderType.delete_all
 MessageStatus.delete_all
+SuspiciousKeyword.delete_all
 
 
 PatternType.create([{id: PATTERN_TYPE_IGNORE, internal_name:'Ignore',display_text:'התעלם'},
@@ -31,3 +32,6 @@ MessageStatus.create([{ id: MESSAGE_STATUS_SUSPICIOUS, internal_name:'Suspicious
 					 {id: MESSAGE_STATUS_ELECTION, internal_name:'Election',display_text:'בחירות'},
 					 {id: MESSAGE_STATUS_USER_SELECTED_SPAM, internal_name:'User Spam',display_text:'ספאם עבור המשתמש'},
 					 {id: MESSAGE_STATUS_USER_SELECTED_IGNORE, internal_name:'User Ignore',display_text:'המשתמש התעלם'}])
+
+SuspiciousKeyword.create([{keyword:'להסרה'}])
+

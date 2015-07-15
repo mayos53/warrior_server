@@ -14,7 +14,7 @@ class UsersController < ApplicationController
      @user.save
 
      text = "Your code is : "+code.to_s
-     sendSMS(text,phone)
+     #sendSMS(text,phone)
 
      render :json => {:user => {:user_id => @user.id, :last_report_time => @user.last_report_time}, :status_code => RESPONSE_STATUS_OK}
         

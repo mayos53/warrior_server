@@ -125,8 +125,8 @@ class MessagesController < ApplicationController
         end
         smsMessage.sender_id = message[:sender_id]
       end       
-      result << smsMessage
       smsMessage.save  
+      result << smsMessage.to_h.merge({:reported_id => message[:id]})
     end
 
 
@@ -281,7 +281,7 @@ class MessagesController < ApplicationController
   end
 
   def reportSpam_params
-    params.permit(:report_time, :user_id, messages: [:user_id, :phone_num, :sender_id, :message_status_id, :body_text, :received_time])
+    params.permit(:report_time, :user_id, messages: [:id, :user_id, :phone_num, :sender_id, :message_status_id, :body_text, :received_time])
   end
 
   def syncMessages_params

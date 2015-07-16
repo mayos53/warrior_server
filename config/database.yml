@@ -20,27 +20,41 @@ development:
   port: 3306
   host: vh7y6jvm52izoz6l.cbetxkdyhwsb.us-east-1.rds.amazonaws.com
 
-# SQLite version 3.x
-#   gem install sqlite3
-#
-#   Ensure the SQLite 3 gem is defined in your Gemfile
-#   gem 'sqlite3'
 test:
-  adapter: postgresql
+  adapter: mysql2
   encoding: utf8
-  database: d9tki6aep3v74a
-  username: aelkldfwcgtvhu
-  password: zSHQVF9spDyX1W1EHxyQfj3lrd
-  port: 5432
-  host: ec2-54-235-134-167.compute-1.amazonaws.com
+  database: heroku_app_db
+  username: n1d9soaayynenw2g
+  password: bprwqxb9rjd4jvkt
+  port: 3306
+  host: vh7y6jvm52izoz6l.cbetxkdyhwsb.us-east-1.rds.amazonaws.com
 
 production:
-  adapter: postgresql
+  adapter: mysql2
   encoding: utf8
-  database: d9tki6aep3v74a
-  username: aelkldfwcgtvhu
-  password: zSHQVF9spDyX1W1EHxyQfj3lrd
-  port: 5432
-  host: ec2-54-235-134-167.compute-1.amazonaws.com
+  database: heroku_app_db
+  username: n1d9soaayynenw2g
+  password: bprwqxb9rjd4jvkt
+  port: 3306
+  host: vh7y6jvm52izoz6l.cbetxkdyhwsb.us-east-1.rds.amazonaws.com
+
+
+# test:
+#   adapter: postgresql
+#   encoding: utf8
+#   database: d9tki6aep3v74a
+#   username: aelkldfwcgtvhu
+#   password: zSHQVF9spDyX1W1EHxyQfj3lrd
+#   port: 5432
+#   host: ec2-54-235-134-167.compute-1.amazonaws.com
+
+# production:
+#   adapter: postgresql
+#   encoding: utf8
+#   database: d9tki6aep3v74a
+#   username: aelkldfwcgtvhu
+#   password: zSHQVF9spDyX1W1EHxyQfj3lrd
+#   port: 5432
+#   host: ec2-54-235-134-167.compute-1.amazonaws.com
 
 

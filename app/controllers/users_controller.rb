@@ -7,7 +7,7 @@ class UsersController < ApplicationController
      phone = get_phone_number(user_params[:phone_num],user_params[:country_code])
      @user = User.where(:phone_num => phone).first
      if @user == nil
-        @user = User.new(:phone_num => phone)
+        @user = User.new(:phone_num => phone,:udid => user_params[:udid])
      end   
      code = random_number
      @user.confirmation_code = code
@@ -23,10 +23,6 @@ class UsersController < ApplicationController
 
   def confirmCode
    user = User.find(confirm_code_params[:user_id])
-         logger.info "********** user.confirmation_code   #{user.confirmation_code } *****"
-                  logger.info "********** confirm_code_params[:confirm_code]  #{confirm_code_params[:confirm_code] } *****"
-
-
    if user.confirmation_code.to_s == confirm_code_params[:confirm_code]
     render :json => { :status_code => RESPONSE_STATUS_OK}
    else
@@ -87,7 +83,7 @@ class UsersController < ApplicationController
     params.permit(:user_id,:confirm_code)
   end
   def user_params
-    params.permit(:country_code, :phone_num)
+    params.permit(:country_code, :phone_num, :udid)
   end
 
   def register_params

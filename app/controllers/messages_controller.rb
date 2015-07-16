@@ -133,6 +133,8 @@ class MessagesController < ApplicationController
     user.last_report_time = reportSpam_params[:report_time]
     user.save
 
+    #TODO:return only ids and statuses 
+
     logger.info "** result[]  *** #{result.inspect}**"
     render :json => { :status_code => RESPONSE_STATUS_OK,
       :messages => result }

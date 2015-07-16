@@ -1,15 +1,20 @@
-<h1>Spams to add</h1>
+<h1 align="center">הודעות חשודות</h1>
 
 <table>
   <thead>
     <tr>
       
-      <th>Time</th>
-      <th>Sender Num</th>
-      <th>Text</th>
-      <th>Pattern</th>
-      <th>Type</th>
-      <th>Select</th>
+      
+      <th></th>
+      <th>סוג תבנית</th>
+      <th>תבנית</th>
+      <th>הודעה</th>
+      <th>מספר טלפון</th>
+      <th>תאריך ושעה</th>
+
+
+
+
       
     </tr>
   </thead>
@@ -19,18 +24,28 @@
     @patternTypes = PatternType.all.collect{ |u| [u.display_text, u.id]}
         logger.info "** patternTypes[]  *** #{@patternTypes.inspect}**"
 
-    @messages = SmsMessage.includes([:user,:sender]).where(:message_status_id => MESSAGE_STATUS_SUSPICIOUS)%>
+    @messages = SmsMessage.includes([:user,:sender]).where(:message_status_id => MESSAGE_STATUS_SUSPICIOUS).order('senders.sender_from DESC')%>
     <% @messages.each_with_index do |message, index| %>
         <%= fields_for "messages[#{index}]", message do |message_fields| %>
           
-          <tr class="data" id="<%=message.id%>">
-            <td> <%= Time.at(message.received_time/1000) %> </td>
-            <td> <%= message.sender.sender_from %> </td>
-            <td> <%= message.body_text %> </td>
-            <td> <%= text_area_tag 'pattern', nil, size: "25x3" %> </td>
-            <td><%=select_tag 'patternType', options_for_select(@patternTypes) %></td>
-            <td> <%= check_box_tag 'spam'%> </td>
-          </tr>
+        <tr class="data" id="<%=message.id%>">
+          <td>  
+            <div>
+               <button class="setSpams" type="button">הגדר תבנית</button> 
+               <img hidden="true" width=50 height=50 src= <%=image_url('loading_spinner.gif')%>></img>
+            </div>
+          </td>
+          <td ><%=select_tag 'patternType', options_for_select(@patternTypes) %></td>
+          <td align="right" dir="rtl"> <%= text_area_tag 'pattern', nil, size: "25x3" %> </td>
+          <td align="right" dir="rtl" > <%= message.body_text %> </td>
+          <td align="center"> <%= message.sender.sender_from %> </td>
+          <td align="right" dir="rtl"> <%= Time.at(message.received_time/1000) %> </td>
+
+         
+        </tr>
+        <tr/>
+        <tr/>
+        <tr/>
         
         <% end %>
       <% end %>
@@ -39,40 +54,49 @@
 </table>
       
 
-<button id="setSpams" type="button">Set spams</button>
+
 
 <script>
-  $('#setSpams').click(function(){
-      spams = {}
-      spams.spams=[]
-      $('tr.data').each(function(){
-          id = $(this).attr('id')
-          pattern = $(this).find("#pattern").val()
-          spam =  $(this).find("#spam").prop('checked')
-          patternType = $(this).find("#patternType").val()
-          if(spam){
-              spams.spams.push({id:id, pattern:pattern, pattern_type:parseInt(patternType)}) 
-          }
-         
+$('.setSpams').click(function(){
 
-      })
+  spams = {}
+  spams.spams=[]
 
-      $.ajax({ 
-         url: "/messages/setSpams.js",
-         type:"POST",
-         dataType: 'script',
-         contentType: 'application/json',
-         data: JSON.stringify(spams)
+  var tr = $(this).parent().parent().parent()    
+  pattern = tr.find("#pattern").val()
+
+  if(pattern == ""){
+    alert('התבנית ריקה!')
+  }else{
+
+    //show loading and hide button
+    $(this).closest("div").find("img").show()
+    $(this).hide()
+
+    id = tr.attr('id')
+    patternType = tr.find("#patternType").val()
+    spams.spams.push({id:id, pattern:pattern, pattern_type:parseInt(patternType)}) 
+
+    $.ajax({ 
+     url: "/messages/setSpams.js",
+     type:"POST",
+     dataType: 'script',
+     contentType: 'application/json',
+     data: JSON.stringify(spams)
+
+   })
+}
+
+})
+
       
-
-      })
 
 
 
      
 
 
-  })
+  
 
 </script>
            

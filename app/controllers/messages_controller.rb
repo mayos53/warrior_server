@@ -23,7 +23,7 @@ class MessagesController < ApplicationController
   # MESSAGE_STATUS_ELECTION = 5 
 
 
-  respond_to :html, :xml, :json	
+  respond_to :html, :xml, :json 
 
   
 
@@ -134,8 +134,7 @@ class MessagesController < ApplicationController
     user.save
 
     #TODO:return only ids and statuses 
-    #TODO:return only messages updated after last sync time
-     
+
     logger.info "** result[]  *** #{result.inspect}**"
     render :json => { :status_code => RESPONSE_STATUS_OK,
       :messages => result }
@@ -147,8 +146,8 @@ class MessagesController < ApplicationController
     spams.each do |spam|
       patternType = spam[:pattern_type]
       pattern = spam[:pattern]
-      logger.info "** Message inspect *** #{SmsMessage.where(spam[:id]).inspect}**"
-      sender_id = SmsMessage.where(spam[:id]).sender_id
+      sender_id = SmsMessage.find(spam[:id]).sender_id
+      #TODO: set black list to true for spams and user spams
       messagePattern = addPattern(sender_id, pattern, patternType)   
       setMessageStatus(messagePattern)
     end
@@ -165,40 +164,7 @@ class MessagesController < ApplicationController
 
  end  
 
-
- def getMessages 
-    user_id = getMessages_params[:user_id]
-    messages = SmsMessage.where({:user_id =>user_id})
-    
-    result = []
-    messages.each do |message|
-      result << message.to_h
-    end
-    render :json => { :status_code => RESPONSE_STATUS_OK,
-      :messages => result }
- end
-
-
-
-
- def addKeyword
-    word = addKeyword_params[:keyword]
-    keyword = SuspiciousKeyword.new(:word => word)
-    keyword.save
-    
-    respond_to do |format|
-        format.html
-        format.json {  render :json => {:status => RESPONSE_STATUS_OK } } 
-    end
-
-  end
-  
-
-  ################ Private methods ##############################
-
-
-
-   def setMessageStatus(messagePattern)
+ def setMessageStatus(messagePattern)
     messages = SmsMessage.where(:sender_id => messagePattern.sender_id)
     logger.info "** MESSAGES COUNT  #{messages.count}**"
     messages.each { |message| 
@@ -220,7 +186,25 @@ class MessagesController < ApplicationController
         message.save
       end
     }
+ end
+
+
+ def addKeyword
+    word = addKeyword_params[:keyword]
+    keyword = SuspiciousKeyword.new(:word => word)
+    keyword.save
+    
+    respond_to do |format|
+        format.html
+        format.json {  render :json => {:status => RESPONSE_STATUS_OK } } 
+    end
+
   end
+  
+
+  ################ Private methods ##############################
+
+
 
   def sendNotification(notificationType)
     uri = URI.parse("https://android.googleapis.com/gcm/send")
@@ -292,7 +276,17 @@ class MessagesController < ApplicationController
     return sender
   end
 
- 
+  def getMessages 
+    user_id = getMessages_params[:user_id]
+    messages = SmsMessage.where({:user_id =>user_id})
+    
+    result = []
+    messages.each do |message|
+      result << message.to_h
+    end
+    render :json => { :status_code => RESPONSE_STATUS_OK,
+      :messages => result }
+ end
 
 
   def syncLists_params
@@ -314,9 +308,11 @@ class MessagesController < ApplicationController
   def addKeyword_params
     params.permit(:keyword)
   end
+
   def getMessages_params
     params.permit(:user_id)
   end
  
 
 end
+

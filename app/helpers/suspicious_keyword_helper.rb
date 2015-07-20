@@ -1,0 +1,2 @@
+module SuspiciousKeywordHelper
+end

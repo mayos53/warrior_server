@@ -1,6 +1,8 @@
 Warrior::Application.routes.draw do
   
 
+  resources :suspicious_keywords
+
   resources :keywords
 
   resources :messages do

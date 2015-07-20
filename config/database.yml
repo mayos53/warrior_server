@@ -7,11 +7,11 @@
 development:
   adapter: mysql2
   encoding: utf8
-  database: heroku_app_db
-  username: n1d9soaayynenw2g
-  password: bprwqxb9rjd4jvkt
+  database: warrior
   port: 3306
-  host: vh7y6jvm52izoz6l.cbetxkdyhwsb.us-east-1.rds.amazonaws.com
+  host: localhost
+  username: root
+
 
 test:
   adapter: mysql2

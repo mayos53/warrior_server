@@ -147,6 +147,7 @@ class MessagesController < ApplicationController
     spams.each do |spam|
       patternType = spam[:pattern_type]
       pattern = spam[:pattern]
+      logger.info "** Message inspect *** #{SmsMessage.where(spam[:id]).inspect}**"
       sender_id = SmsMessage.where(spam[:id]).sender_id
       messagePattern = addPattern(sender_id, pattern, patternType)   
       setMessageStatus(messagePattern)
@@ -166,13 +167,13 @@ class MessagesController < ApplicationController
 
 
  def getMessages 
-    user_id = getMessages_params[:id]
-    messages = SmsMessage.where({:user_id=>user_id})
+    user_id = getMessages_params[:user_id]
+    messages = SmsMessage.where({:user_id =>user_id})
     
     result = []
-    messages.each do |message|{
+    messages.each do |message|
       result << message.to_h
-    }
+    end
     render :json => { :status_code => RESPONSE_STATUS_OK,
       :messages => result }
  end

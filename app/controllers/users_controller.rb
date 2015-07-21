@@ -1,6 +1,6 @@
 class UsersController < ApplicationController
 
-  respond_to :html, :xml, :json	
+  respond_to :json	
 
   def create
     

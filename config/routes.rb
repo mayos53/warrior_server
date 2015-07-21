@@ -16,14 +16,16 @@ Warrior::Application.routes.draw do
         get  'sendSMS' 
         post 'getMessages'
       end
-  end
+  end 
 
-  resources :users do
-      collection do
-        post 'register'
-        post 'confirmCode' 
-      end
-  end
+  resource :users
+
+  # resources :users do
+  #     collection do
+  #       post 'register'
+  #       post 'confirmCode' 
+  #     end
+  # end
 
 
   # The priority is based upon order of creation: first created -> highest priority.

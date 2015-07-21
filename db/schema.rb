@@ -43,19 +43,23 @@ ActiveRecord::Schema.define(version: 20150720144027) do
   add_index "companies", ["id"], name: "id_UNIQUE", unique: true, using: :btree
 
   create_table "company_for_senders", force: true do |t|
-    t.integer "company_id", limit: 8
+    t.integer "company_id"
     t.integer "sender_id",  limit: 8
   end
 
+  add_index "company_for_senders", ["company_id"], name: "fk_cfs_company_id_idx", using: :btree
   add_index "company_for_senders", ["id"], name: "id_UNIQUE", unique: true, using: :btree
+  add_index "company_for_senders", ["sender_id"], name: "fk_cfs_sener_id_idx", using: :btree
 
   create_table "message_patterns", force: true do |t|
     t.integer "pattern_type_id"
     t.text    "pattern_text"
-    t.integer "sender_id"
+    t.integer "sender_id",       limit: 8
   end
 
   add_index "message_patterns", ["id"], name: "id_UNIQUE", unique: true, using: :btree
+  add_index "message_patterns", ["pattern_type_id"], name: "fk_pattern_types_id_idx", using: :btree
+  add_index "message_patterns", ["sender_id"], name: "fk_sender_id_idx", using: :btree
 
   create_table "message_statuses", force: true do |t|
     t.string "internal_name", limit: 50, null: false
@@ -76,23 +80,18 @@ ActiveRecord::Schema.define(version: 20150720144027) do
 
   add_index "sender_types", ["id"], name: "id_UNIQUE", unique: true, using: :btree
 
-  create_table "senders", force: true do |t|
-    t.string  "sender_from",          limit: 50
-    t.binary  "is_sender_black_list", limit: 1,  default: "1", null: false
-    t.integer "sender_type_id",       limit: 8,                null: false
-  end
-
-  add_index "senders", ["id"], name: "id_UNIQUE", unique: true, using: :btree
-
   create_table "sms_messages", force: true do |t|
     t.integer "user_id",           limit: 8, null: false
-    t.integer "sender_id",                   null: false
+    t.integer "sender_id",         limit: 8, null: false
     t.integer "message_status_id",           null: false
     t.text    "body_text",                   null: false
     t.integer "received_time",     limit: 8, null: false
   end
 
   add_index "sms_messages", ["id"], name: "id_UNIQUE", unique: true, using: :btree
+  add_index "sms_messages", ["message_status_id"], name: "fk_sm_message_status_id_idx", using: :btree
+  add_index "sms_messages", ["sender_id"], name: "fk_sm_sender_id_idx", using: :btree
+  add_index "sms_messages", ["user_id"], name: "fk_sm_users_id_idx", using: :btree
 
   create_table "suspicious_keywords", force: true do |t|
     t.string "keyword", limit: 60, null: false
@@ -104,16 +103,7 @@ ActiveRecord::Schema.define(version: 20150720144027) do
     t.binary  "is_spam",            limit: 1, null: false
   end
 
-  create_table "users", force: true do |t|
-    t.string  "udid",              limit: 36
-    t.string  "reg_id"
-    t.string  "phone_num",         limit: 12
-    t.integer "confirmation_code", limit: 2
-    t.integer "last_report_time",  limit: 8
-    t.integer "agreement_time",    limit: 8
-    t.integer "confirmation_time", limit: 8
-  end
-
-  add_index "users", ["id"], name: "id_UNIQUE", unique: true, using: :btree
+  add_index "user_patterns", ["message_pattern_id"], name: "fk_message_patterns_id_idx", using: :btree
+  add_index "user_patterns", ["user_id"], name: "fk_users_id_idx", using: :btree
 
 end

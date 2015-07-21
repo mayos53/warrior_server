@@ -22,7 +22,6 @@ Warrior::Application.routes.draw do
       collection do
         post 'register'
         post 'confirmCode' 
-        post 'create'
       end
   end
 

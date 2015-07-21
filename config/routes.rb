@@ -18,14 +18,13 @@ Warrior::Application.routes.draw do
       end
   end 
 
-  resource :users
-
-  # resources :users do
-  #     collection do
-  #       post 'register'
-  #       post 'confirmCode' 
-  #     end
-  # end
+  resources :users do
+      collection do
+        post 'register'
+        post 'confirmCode' 
+        post 'create'
+      end
+  end
 
 
   # The priority is based upon order of creation: first created -> highest priority.

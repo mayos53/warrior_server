@@ -18,7 +18,7 @@ Warrior::Application.routes.draw do
       end
   end 
 
-  resources :users do
+  resources :users , except: [:index,:new,:edit,:show,:update,:destroy] do
       collection do
         post 'register'
         post 'confirmCode' 

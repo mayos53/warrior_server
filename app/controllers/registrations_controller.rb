@@ -1,8 +1,8 @@
-class RegistrationController < Devise::RegistrationsController
+class RegistrationsController < Devise::RegistrationsController
 
-  def create
-    super
-  end
+  # def create
+  #   super
+  # end
 
 
 end

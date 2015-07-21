@@ -1,13 +1,14 @@
 Warrior::Application.routes.draw do
   
 
+  devise_for :admins, :controllers => { :registrations => "registrations" }
   resources :suspicious_keywords
 
   resources :keywords
 
   resources :messages do
       collection do
-        post  'syncBlackList'
+        post 'syncBlackList'
         post 'syncMessages'
         post 'reportSpams'
         post 'setSpams'

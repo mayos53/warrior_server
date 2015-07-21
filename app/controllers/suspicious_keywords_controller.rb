@@ -1,5 +1,8 @@
 class SuspiciousKeywordsController < ApplicationController
+  
   before_action :set_suspicious_keyword, only: [:show, :edit, :update, :destroy]
+  before_filter :authenticate_user!
+
 
   # GET /suspicious_keywords
   # GET /suspicious_keywords.json

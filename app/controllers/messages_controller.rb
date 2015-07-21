@@ -1,7 +1,7 @@
 class MessagesController < ApplicationController
   
 
-  
+  before_filter :authenticate_user!, :only=>[:index,:setSpams]
 
   NOTIFICATION_TYPE_SYNCHRONIZE = 1
 
@@ -189,17 +189,6 @@ class MessagesController < ApplicationController
  end
 
 
- def addKeyword
-    word = addKeyword_params[:keyword]
-    keyword = SuspiciousKeyword.new(:word => word)
-    keyword.save
-    
-    respond_to do |format|
-        format.html
-        format.json {  render :json => {:status => RESPONSE_STATUS_OK } } 
-    end
-
-  end
   
 
   ################ Private methods ##############################
